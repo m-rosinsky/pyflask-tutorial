@@ -1,6 +1,7 @@
 import pytest
 from flaskr.db import get_db
 
+
 def test_index(client, auth):
     # Test GET for index page (no login).
     response = client.get('/')
@@ -15,10 +16,11 @@ def test_index(client, auth):
     response = client.get('/')
     assert response.status_code == 200
     assert b'Log Out' in response.data
-    assert b'test title' in response.data   # the name of the sample post.
-    assert b'by test on 2018-01-01' in response.data    # date of sample post.
-    assert b'test\nbody' in response.data   # username of poster and body of post.
-    assert b'href="/1/update"' in response.data # link to edit post.
+    assert b'test title' in response.data  # the name of the sample post.
+    assert b'by test on 2018-01-01' in response.data  # date of sample post.
+    assert b'test\nbody' in response.data  # username and body.
+    assert b'href="/1/update"' in response.data  # link to edit post.
+
 
 @pytest.mark.parametrize('path', (
     '/create',
@@ -29,6 +31,7 @@ def test_login_required(client, path):
     # All above paths require log in, so this should redirect to login page.
     response = client.post(path)
     assert response.headers["Location"] == "/auth/login"
+
 
 def test_author_required(app, client, auth):
     # Change the post author to another user.
@@ -49,6 +52,7 @@ def test_author_required(app, client, auth):
     # Current user shouldn't see edit link.
     assert b'href="/1/update"' not in client.get('/').data
 
+
 @pytest.mark.parametrize('path', (
     '/2/update',
     '/2/delete',
@@ -59,6 +63,7 @@ def test_exists_required(client, auth, path):
 
     # Try to POST an update or delete to an id that does not exist.
     assert client.post(path).status_code == 404
+
 
 def test_create(client, auth, app):
     # Login to test user.
@@ -78,6 +83,7 @@ def test_create(client, auth, app):
         # There should be 2 posts now.
         assert count == 2
 
+
 def test_update(client, auth, app):
     # Login to test user.
     auth.login()
@@ -94,6 +100,7 @@ def test_update(client, auth, app):
         post = db.execute("SELECT * FROM post WHERE id = 1").fetchone()
         assert post['title'] == 'updated'
 
+
 @pytest.mark.parametrize('path', (
     '/create',
     '/1/update',
@@ -105,6 +112,7 @@ def test_create_update_validate(client, auth, path):
     # Attempt to modify a post with an empty title.
     response = client.post(path, data={'title': '', 'body': ''})
     assert b'Title is required.' in response.data
+
 
 def test_delete(client, auth, app):
     # Login to test user.
