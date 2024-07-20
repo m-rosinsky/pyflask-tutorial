@@ -4,7 +4,13 @@
 
 My goal with this project is to learn more about backend system design by starting with the base project provided by the Python flask docs (https://flask.palletsprojects.com/en/3.0.x/tutorial/) and expanding it.
 
-## Base Project
+## Navigation
+
+Each progression of the project is snapshotted into its own branch.
+
+The branch name is in parentheses after the section name, so the state of the application that corresponds to the specific section of the README can be found.
+
+## Base Project (branch: 0-base-app)
 
 The base project is a simple forum-style application that allows users to make posts. The current features are:
 
