@@ -1,0 +1,19 @@
+# Python virtual environment.
+.venv/
+
+# Python cache files.
+*.pyc
+__pycache__/
+
+# Flask instance files.
+instance/
+
+# Python test files.
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Python build files.
+dist/
+build/
+*.egg-info/
