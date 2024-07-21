@@ -1,3 +1,5 @@
 flask
 pytest
 coverage
+click
+psycopg2-binary

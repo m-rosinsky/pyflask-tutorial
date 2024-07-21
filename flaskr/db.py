@@ -1,16 +1,17 @@
-import sqlite3
-
+import os
+import psycopg2
 import click
+
 from flask import current_app, g, Flask
+from psycopg2.extras import DictCursor
 
 
 def get_db():
     if 'db' not in g:
-        g.db = sqlite3.connect(
+        g.db = psycopg2.connect(
             current_app.config['DATABASE'],
-            detect_types=sqlite3.PARSE_DECLTYPES
+            cursor_factory=DictCursor
         )
-        g.db.row_factory = sqlite3.Row
 
     return g.db
 
@@ -24,9 +25,13 @@ def close_db(e=None):
 
 def init_db():
     db = get_db()
+    cursor = db.cursor()
 
     with current_app.open_resource('schema.sql') as f:
-        db.executescript(f.read().decode('utf-8'))
+        cursor.execute(f.read().decode('utf-8'))
+        db.commit()
+
+    cursor.close()
 
 
 @click.command('init-db')

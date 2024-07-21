@@ -1,4 +1,5 @@
 import functools
+import psycopg2
 
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for
@@ -25,12 +26,14 @@ def register():
 
         if error is None:
             try:
-                db.execute(
-                    "INSERT INTO user (username, password) VALUES (?, ?)",
-                    (username, generate_password_hash(password)),
-                )
-                db.commit()
-            except db.IntegrityError:
+                with db.cursor() as cursor:
+                    cursor.execute(
+                        "INSERT INTO users (username, password) VALUES (%s, %s)",
+                        (username, generate_password_hash(password)),
+                    )
+                    db.commit()
+            except psycopg2.IntegrityError:
+                db.rollback()
                 error = f"User '{username}' is already registered"
             else:
                 return redirect(url_for("auth.login"))
@@ -47,9 +50,13 @@ def login():
         password = request.form['password']
         db = get_db()
         error = None
-        user = db.execute(
-            'SELECT * FROM user WHERE username = ?', (username,)
-        ).fetchone()
+        
+        with db.cursor() as cursor:
+            cursor.execute(
+                'SELECT * FROM users WHERE username = %s', (username,)
+            )
+
+            user = cursor.fetchone()
 
         if user is None:
             error = 'Incorrect username.'
@@ -73,9 +80,12 @@ def load_logged_in_user():
     if user_id is None:
         g.user = None
     else:
-        g.user = get_db().execute(
-            'SELECT * FROM user WHERE id = ?', (user_id,)
-        ).fetchone()
+        with get_db().cursor() as cursor:
+            cursor.execute(
+                'SELECT * FROM users WHERE id = %s', (user_id,)
+            )
+
+            g.user = cursor.fetchone()
 
 
 @bp.route('/logout')
