@@ -10,32 +10,6 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 with open(os.path.join(os.path.dirname(__file__), 'data.sql'), 'rb') as f:
     _data_sql = f.read().decode('utf-8')
 
-# def create_test_db():
-#     base_db_url = os.getenv('DATABASE_URL')
-#     test_db_name = 'test_db'
-
-#     conn = psycopg2.connect(base_db_url)
-#     conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-#     cursor = conn.cursor()
-#     cursor.execute(f'DROP DATABASE IF EXISTS {test_db_name}')
-#     cursor.execute(f'CREATE DATABASE {test_db_name}')
-#     cursor.close()
-#     conn.close()
-
-#     test_db_url = base_db_url.rsplit('/', 1)[0] + f'/{test_db_name}'
-#     return test_db_url
-
-# def drop_test_db(test_db_url):
-#     base_db_url = test_db_url.rsplit('/', 1)[0] + '/postgres'
-#     test_db_name = test_db_url.rsplit('/', 1)[1]
-
-#     conn = psycopg2.connect(base_db_url)
-#     conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-#     cursor = conn.cursor()
-#     cursor.execute(f'DROP DATABASE IF EXISTS {test_db_name}')
-#     cursor.close()
-#     conn.close()
-
 def create_test_db():
     base_db_url = os.getenv('DATABASE_URL')
     test_db_name = 'test_db'

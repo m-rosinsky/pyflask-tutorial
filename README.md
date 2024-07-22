@@ -165,3 +165,128 @@ We need to do the same type of updating when using for the blog backend as well.
 
 ### Updating the Testing Framework
 
+We have to update how we test the application now that it interacts with a remote postgres server.
+
+The first step in this is to update the GH Actions workflow to stand up a local postgres server:
+
+```yml
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: test_db
+          POSTGRES_USER: username
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://username:password@localhost/test_db
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.10
+    # Same code omitted.
+    # ...
+```
+
+Since the database connection URL is kept in environment variables for security reasons, we can set the environment variable for the local test server within the workflow manifest.
+
+Then, we can change the test programs in the `./tests` directory to reflect the new `psycopg2` syntax instead of the `sqlite3` syntax from before.
+
+Now we can test it locally against our remote server, and via GH actions:
+
+```
+# pytest
+=============================== test session starts ===============================
+platform linux -- Python 3.12.3, pytest-8.3.1, pluggy-1.5.0
+rootdir: /code/pyflask-tutorial
+configfile: pyproject.toml
+testpaths: tests
+collected 23 items                                                                                                                                                                                                                                           
+
+tests/test_auth.py ........                [ 34%]
+tests/test_blog.py ............            [ 86%]
+tests/test_db.py ..                        [ 95%]
+tests/test_factory.py .                    [100%]
+
+=============================== 23 passed in 5.04s ===============================
+```
+
+### Dealing with Database Connection Issues
+
+Since the DB is remote now, it's more likely that we can encounter an issue with connecting to the database than when we were using a local sqlite instance.
+
+We need to add some kind of graceful error handling if we are unable to reach our database, so that the app doesn't crash.
+
+For example, if we stop the postgres container and run the app, we are treated to this screen when trying to log in:
+
+![DB Connection Failure](./imgs/db-connect-fail.png)
+
+The desired behavior is that the webpage should render as much as it can, and report the user that the connection failed, rather than bringing down the web application.
+
+`./flaskr/db.py`:
+```python
+def get_db():
+    if 'db' not in g:
+        try:
+            g.db = psycopg2.connect(
+                current_app.config['DATABASE'],
+                cursor_factory=DictCursor
+            )
+        except OperationalError as e:
+            current_app.logger.error(f"Failed to connect to the database: {e}")
+            return None
+
+    return g.db
+```
+
+We add some error handling when connecting to the database. We log the error, then return `None` if the connection failed.
+
+In this way, when an operation tries to retrieve the DB, we can check if that retrieve failed, and handle accordingly:
+
+`./flaskr/blog.py`:
+```python
+@bp.route('/')
+def index():
+    db = get_db()
+    if db is None:
+        return render_template('blog/index.html', posts='error')
+    
+    with db.cursor() as cursor:
+        cursor.execute(
+            'SELECT p.id, title, body, created, author_id, username'
+            ' FROM posts p JOIN users u ON p.author_id = u.id'
+            ' ORDER BY created DESC'
+        )
+    
+        posts = cursor.fetchall()
+    return render_template('blog/index.html', posts=posts)
+```
+
+Now when we render the `index.html` page, we can check if `posts` is `None`, indicating the error:
+
+```html
+{% block content %}
+  {% if posts == 'error' %}
+    <p>🚨Failed to load posts🚨</p>
+  {% else %}
+    <!-- Render as normal -->
+  {% endif %}
+{% endblock %}
+```
+
+Now we gracefully handle the bad connection, instead of the server crashing:
+
+| ![Error Page](./imgs/db-connect-fail-page.png) |
+| :--: |
+| _Graceful Error Handling_ |

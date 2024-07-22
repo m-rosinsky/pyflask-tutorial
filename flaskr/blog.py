@@ -12,12 +12,15 @@ bp = Blueprint('blog', __name__)
 @bp.route('/')
 def index():
     db = get_db()
+    if db is None:
+        return render_template('blog/index.html', posts='error')
+    
     with db.cursor() as cursor:
         cursor.execute(
-        'SELECT p.id, title, body, created, author_id, username'
-        ' FROM posts p JOIN users u ON p.author_id = u.id'
-        ' ORDER BY created DESC'
-    )
+            'SELECT p.id, title, body, created, author_id, username'
+            ' FROM posts p JOIN users u ON p.author_id = u.id'
+            ' ORDER BY created DESC'
+        )
     
         posts = cursor.fetchall()
     return render_template('blog/index.html', posts=posts)

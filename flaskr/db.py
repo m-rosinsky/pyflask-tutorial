@@ -16,7 +16,7 @@ def get_db():
             )
         except OperationalError as e:
             current_app.logger.error(f"Failed to connect to the database: {e}")
-            raise RuntimeError("Failed to connect to the database. Please check the database connection settings.")
+            return None
 
     return g.db
 
