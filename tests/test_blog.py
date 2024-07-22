@@ -37,10 +37,11 @@ def test_author_required(app, client, auth):
     # Change the post author to another user.
     with app.app_context():
         db = get_db()
-        db.execute(
-            "UPDATE post SET author_id = 2 WHERE id = 1"
-        )
-        db.commit()
+        with db.cursor() as cursor:
+            cursor.execute(
+                "UPDATE posts SET author_id = 2 WHERE id = 1"
+            )
+            db.commit()
 
     # Login to test user.
     auth.login()
@@ -78,7 +79,11 @@ def test_create(client, auth, app):
     # Check that the blog post was added to the db.
     with app.app_context():
         db = get_db()
-        count = db.execute("SELECT COUNT(id) FROM post").fetchone()[0]
+        with db.cursor() as cursor:
+            cursor.execute(
+                "SELECT COUNT(id) FROM posts"
+            )
+            count = cursor.fetchone()[0]
 
         # There should be 2 posts now.
         assert count == 2
@@ -97,7 +102,9 @@ def test_update(client, auth, app):
     # Check the db for update.
     with app.app_context():
         db = get_db()
-        post = db.execute("SELECT * FROM post WHERE id = 1").fetchone()
+        with db.cursor() as cursor:
+            cursor.execute("SELECT * FROM posts WHERE id = 1")
+            post = cursor.fetchone()
         assert post['title'] == 'updated'
 
 
@@ -125,5 +132,7 @@ def test_delete(client, auth, app):
     # Ensure post was deleted from db.
     with app.app_context():
         db = get_db()
-        post = db.execute("SELECT * FROM post WHERE id = 1").fetchone()
+        with db.cursor() as cursor:
+            cursor.execute("SELECT * FROM posts WHERE id = 1")
+            post = cursor.fetchone()
         assert post is None

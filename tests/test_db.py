@@ -1,4 +1,4 @@
-import sqlite3
+import psycopg2
 
 import pytest
 from flaskr.db import get_db
@@ -9,8 +9,9 @@ def test_get_close_db(app):
         db = get_db()
         assert db is get_db()
 
-    with pytest.raises(sqlite3.ProgrammingError) as e:
-        db.execute('SELECT 1')
+    with pytest.raises(psycopg2.InterfaceError) as e:
+        with db.cursor() as cursor:
+            cursor.execute('SELECT 1')
 
     assert 'closed' in str(e.value)
 

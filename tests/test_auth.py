@@ -19,9 +19,13 @@ def test_register(client, app):
 
     # Test that the entry was successfully entered into db.
     with app.app_context():
-        assert get_db().execute(
-            "SELECT * FROM user WHERE username = 'a'",
-        ).fetchone() is not None
+        db = get_db()
+        with db.cursor() as cursor:
+            cursor.execute(
+                "SELECT * FROM users WHERE username = 'a'",
+            )
+            
+            assert cursor.fetchone() is not None
 
 
 @pytest.mark.parametrize(('username', 'password', 'message'), (
