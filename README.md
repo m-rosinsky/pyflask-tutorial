@@ -14,7 +14,7 @@ I want to incorporate a remote postgres server instead of the local sqlite insta
 | :--: |
 | _Separating the Data Tier_ |
 
-### The Postgres Server
+## The Postgres Server
 
 There are many solutions to standing up a postgres server.
 
@@ -39,7 +39,7 @@ We then have two containers, one running the application (which I'm also doing m
 | :--: |
 | _A separate container for postgres_ |
 
-### The DB Schema
+## The DB Schema
 
 Making the switch from sqlite to postgres requires switching a bit of syntactic sugar in the schema:
 
@@ -65,7 +65,7 @@ CREATE TABLE posts (
 );
 ```
 
-### Switching from sqlite to psycopg2
+## Switching from sqlite to psycopg2
 
 To interact with our new postgres server, we'll use the `psycopg2` python module instead of the `sqlite` one that we were using before.
 
@@ -141,7 +141,7 @@ Now we should be able to initialize the database with the `click` command we reg
 Initialized the database.
 ```
 
-### Auth Changes
+## Auth Changes
 
 We'll have to switch some of the syntax we use over to the postgres syntax:
 
@@ -163,7 +163,7 @@ We now use the `db.cursor()` object to interact with the DB, instead of calling 
 
 We need to do the same type of updating when using for the blog backend as well.
 
-### Updating the Testing Framework
+## Updating the Testing Framework
 
 We have to update how we test the application now that it interacts with a remote postgres server.
 
@@ -222,7 +222,7 @@ tests/test_factory.py .                    [100%]
 =============================== 23 passed in 5.04s ===============================
 ```
 
-### Dealing with Database Connection Issues
+## Dealing with Database Connection Issues
 
 Since the DB is remote now, it's more likely that we can encounter an issue with connecting to the database than when we were using a local sqlite instance.
 
@@ -297,6 +297,6 @@ We employ the same strategy with the `auth` module, opting to flash the error me
 | :--: |
 | _Graceful Error Handling for Login_ |
 
-### Testing with Connection Issues
+## Testing with Connection Issues
 
 Now we need to add tests to account for handling database outages.
