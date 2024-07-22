@@ -6,7 +6,7 @@ from flask import (
 )
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from flaskr.db import get_db
+from flaskr.db import get_db, DB_CONNECT_ERROR_STR
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -23,6 +23,9 @@ def register():
             error = 'Username is required'
         elif not password:
             error = 'Password is required'
+
+        if db is None:
+            error = DB_CONNECT_ERROR_STR
 
         if error is None:
             try:
@@ -50,23 +53,27 @@ def login():
         password = request.form['password']
         db = get_db()
         error = None
+
+        if db is None:
+            error = DB_CONNECT_ERROR_STR
         
-        with db.cursor() as cursor:
-            cursor.execute(
-                'SELECT * FROM users WHERE username = %s', (username,)
-            )
-
-            user = cursor.fetchone()
-
-        if user is None:
-            error = 'Incorrect username.'
-        elif not check_password_hash(user['password'], password):
-            error = 'Incorrect password.'
-
         if error is None:
-            session.clear()
-            session['user_id'] = user['id']
-            return redirect(url_for('index'))
+            with db.cursor() as cursor:
+                cursor.execute(
+                    'SELECT * FROM users WHERE username = %s', (username,)
+                )
+
+                user = cursor.fetchone()
+
+            if user is None:
+                error = 'Incorrect username.'
+            elif not check_password_hash(user['password'], password):
+                error = 'Incorrect password.'
+
+            if error is None:
+                session.clear()
+                session['user_id'] = user['id']
+                return redirect(url_for('index'))
 
         flash(error)
 
@@ -76,11 +83,15 @@ def login():
 @bp.before_app_request
 def load_logged_in_user():
     user_id = session.get('user_id')
+    db = get_db()
+    if db is None:
+        g.user = None
+        return
 
     if user_id is None:
         g.user = None
     else:
-        with get_db().cursor() as cursor:
+        with db.cursor() as cursor:
             cursor.execute(
                 'SELECT * FROM users WHERE id = %s', (user_id,)
             )

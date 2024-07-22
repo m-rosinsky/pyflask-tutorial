@@ -6,6 +6,8 @@ from flask import current_app, g, Flask
 from psycopg2.extras import DictCursor
 from psycopg2 import OperationalError
 
+DB_CONNECT_ERROR_STR = 'Failed to connect to database.'
+
 
 def get_db():
     if 'db' not in g:

@@ -290,3 +290,13 @@ Now we gracefully handle the bad connection, instead of the server crashing:
 | ![Error Page](./imgs/db-connect-fail-page.png) |
 | :--: |
 | _Graceful Error Handling_ |
+
+We employ the same strategy with the `auth` module, opting to flash the error message when the user tries to login or register:
+
+| ![Error Login](./imgs/db-connect-fail-login.png) |
+| :--: |
+| _Graceful Error Handling for Login_ |
+
+### Testing with Connection Issues
+
+Now we need to add tests to account for handling database outages.

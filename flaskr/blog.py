@@ -4,7 +4,7 @@ from flask import (
 from werkzeug.exceptions import abort
 
 from flaskr.auth import login_required
-from flaskr.db import get_db
+from flaskr.db import get_db, DB_CONNECT_ERROR_STR
 
 bp = Blueprint('blog', __name__)
 
@@ -37,6 +37,10 @@ def create():
         if not title:
             error = 'Title is required.'
 
+        db = get_db()
+        if db is None:
+            error = DB_CONNECT_ERROR_STR
+
         if error is not None:
             flash(error)
         else:
@@ -55,6 +59,9 @@ def create():
 
 def get_post(id, check_author=True):
     db = get_db()
+    if db is None:
+        return None
+    
     with db.cursor() as cursor:
         cursor.execute(
             'SELECT p.id, title, body, created, author_id, username'
@@ -77,6 +84,10 @@ def get_post(id, check_author=True):
 @login_required
 def update(id):
     post = get_post(id)
+
+    # Error retrieving posts.
+    if post is None:
+        return redirect(url_for('blog.index'))
 
     if request.method == 'POST':
         title = request.form['title']
@@ -106,11 +117,19 @@ def update(id):
 @login_required
 def delete(id):
     get_post(id)
+    error = None
     db = get_db()
-    with db.cursor() as cursor:
-        cursor.execute(
-            'DELETE FROM posts WHERE id = %s',
-            (id, )
-        )
-        db.commit()
+
+    if db is None:
+        error = DB_CONNECT_ERROR_STR
+
+    if error is not None:
+        flash(error)
+    else:
+        with db.cursor() as cursor:
+            cursor.execute(
+                'DELETE FROM posts WHERE id = %s',
+                (id, )
+            )
+            db.commit()
     return redirect(url_for('blog.index'))
