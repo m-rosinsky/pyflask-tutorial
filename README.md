@@ -114,7 +114,7 @@ Before, it needed to locate the local instance of the `sqlite` database file, bu
 This can be stored in environment variables for secret keeping:
 
 ```
-# export DATABASE_URL=postgresql://flaskadmin:flaskpassword@postgres-container:32/flaskdb
+# export DATABASE_URL=postgresql://flaskadmin:flaskpassword@postgres-container:5432/flaskdb
 ```
 
 These are the parameters we set when running the docker container for the postgres server.
