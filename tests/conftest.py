@@ -1,7 +1,7 @@
 import os
-import tempfile
-
 import pytest
+import psycopg2
+
 from flask import Flask
 from flaskr import create_app
 from flaskr.db import get_db, init_db
@@ -12,21 +12,28 @@ with open(os.path.join(os.path.dirname(__file__), 'data.sql'), 'rb') as f:
 
 @pytest.fixture
 def app():
-    db_fd, db_path = tempfile.mkstemp()
-
     app = create_app({
         'TESTING': True,
-        'DATABASE': db_path,
+        'DATABASE': os.getenv('DATABASE_URL'),
     })
 
     with app.app_context():
         init_db()
-        get_db().executescript(_data_sql)
+        db = get_db()
+
+        with db.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(_data_sql)
+            conn.commit()
 
     yield app
 
-    os.close(db_fd)
-    os.unlink(db_path)
+    with app.app_context():
+        with db.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute('DROP TABLE IF EXISTS posts')
+                cur.execute('DROP TABLE IF EXISTS users')
+            conn.commit()
 
 
 @pytest.fixture
