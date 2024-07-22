@@ -8,7 +8,11 @@ Currently, all the application uses a local sqlite instance for data operations.
 
 ## Solution
 
-I want to incorporate a remote postgres server instead of the local sqlite instance.
+I want to incorporate a remote postgres server instead of the local sqlite instance. In this way, the web tier and data tier can be monitored and scaled independetly:
+
+| ![Data Tier Design](./imgs/data-tier-design.png) |
+| :--: |
+| _Separating the Data Tier_ |
 
 ### The Postgres Server
 
@@ -157,11 +161,7 @@ except psycopg2.IntegrityError:
 
 We now use the `db.cursor()` object to interact with the DB, instead of calling `db.execute()` directly when using the `sqlite` library.
 
-### Blog Changes
+We need to do the same type of updating when using for the blog backend as well.
 
-We need to do the same type of updating when using for the blog backend as well:
+### Updating the Testing Framework
 
-`flaskr/blog.py`:
-```python
-
-```
