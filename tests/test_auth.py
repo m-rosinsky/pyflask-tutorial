@@ -1,6 +1,6 @@
 import pytest
 from flask import g, session
-from flaskr.db import get_db
+from flaskr.db import get_db, DB_CONNECT_ERROR_STR
 
 
 def test_register(client, app):
@@ -26,6 +26,22 @@ def test_register(client, app):
             )
             
             assert cursor.fetchone() is not None
+
+
+def test_noconnect_register(badclient):
+    # Test successful GET of registration page.
+    assert badclient.get('/auth/register').status_code == 200
+
+    # Test POST of a new user, which should error since we can't connect
+    # to database.
+    response = badclient.post(
+        '/auth/register',
+        data={
+            'username': 'a',
+            'password': 'a',
+        }
+    )
+    assert DB_CONNECT_ERROR_STR.encode('utf-8') in response.data
 
 
 @pytest.mark.parametrize(('username', 'password', 'message'), (

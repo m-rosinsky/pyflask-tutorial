@@ -4,6 +4,16 @@ import pytest
 from flaskr.db import get_db
 
 
+def test_noconnect_db(badapp, caplog):
+    # badapp has an invalid postgres url.
+    with badapp.app_context():
+        with caplog.at_level('ERROR'):
+            db = get_db()
+            assert db is None
+
+            assert "Failed to connect" in caplog.text
+
+
 def test_get_close_db(app):
     with app.app_context():
         db = get_db()

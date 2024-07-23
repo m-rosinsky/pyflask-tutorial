@@ -22,6 +22,17 @@ def test_index(client, auth):
     assert b'href="/1/update"' in response.data  # link to edit post.
 
 
+def test_noconnect_index(badclient):
+    # Test GET for index page.
+    response = badclient.get('/')
+    assert response.status_code == 200
+    assert b'Log In' in response.data
+    assert b'Register' in response.data
+
+    # Error message should be present.
+    assert b'Failed to load posts' in response.data
+
+
 @pytest.mark.parametrize('path', (
     '/create',
     '/1/update',

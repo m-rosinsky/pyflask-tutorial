@@ -90,17 +90,20 @@ def update(id):
         return redirect(url_for('blog.index'))
 
     if request.method == 'POST':
+        error = None
         title = request.form['title']
         body = request.form['body']
-        error = None
-
+        
         if not title:
             error = 'Title is required.'
+        
+        db = get_db()
+        if db is None:
+            error = DB_CONNECT_ERROR_STR
 
         if error is not None:
             flash(error)
         else:
-            db = get_db()
             with db.cursor() as cursor:
                 cursor.execute(
                     'UPDATE posts SET title = %s, body = %s'

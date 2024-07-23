@@ -2,7 +2,6 @@ import os
 import pytest
 import psycopg2
 
-from flask import Flask
 from flaskr import create_app
 from flaskr.db import get_db, init_db
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
@@ -68,12 +67,33 @@ def app():
 
 
 @pytest.fixture
-def client(app: Flask):
+def badapp(monkeypatch):
+    def mock_connect(*args, **kwargs):
+        raise psycopg2.OperationalError
+
+    # Use monkeypatch to simulate the error when attempting to connect.
+    monkeypatch.setattr('flaskr.db.psycopg2.connect', mock_connect)
+
+    badapp = create_app({
+        'TESTING': True,
+        'DATABASE': 'postgresql://invalidurl',
+    })
+
+    yield badapp
+
+
+@pytest.fixture
+def client(app):
     return app.test_client()
 
 
 @pytest.fixture
-def runner(app: Flask):
+def badclient(badapp):
+    return badapp.test_client()
+
+
+@pytest.fixture
+def runner(app):
     return app.test_cli_runner()
 
 
