@@ -72,6 +72,21 @@ def test_login(client, auth):
         assert g.user['username'] == 'test'
 
 
+def test_noconnect_login(badclient):
+    # Test successful GET of login page.
+    assert badclient.get('/auth/login').status_code == 200
+
+    # Test login response.
+    response = badclient.post(
+        '/auth/login',
+        data={
+            'username': 'a',
+            'password': 'a',
+        }
+    )
+    assert DB_CONNECT_ERROR_STR.encode('utf-8') in response.data
+
+
 @pytest.mark.parametrize(('username', 'password', 'message'), (
     ('a', 'test', b'Incorrect username.'),
     ('test', 'a', b'Incorrect password.'),
