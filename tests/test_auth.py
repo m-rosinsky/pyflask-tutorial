@@ -24,7 +24,7 @@ def test_register(client, app):
             cursor.execute(
                 "SELECT * FROM users WHERE username = 'a'",
             )
-            
+
             assert cursor.fetchone() is not None
 
 

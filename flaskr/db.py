@@ -1,4 +1,3 @@
-import os
 import psycopg2
 import click
 
@@ -42,7 +41,7 @@ def init_db():
         cursor.close()
     except Exception as e:
         current_app.logger.error(f"Failed to initialize the database: {e}")
-        raise RuntimeError("Failed to initialize the database. Please check the schema and the database connection.")
+        raise RuntimeError("Failed to initialize the database.")
 
 
 @click.command('init-db')

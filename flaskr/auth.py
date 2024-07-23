@@ -31,7 +31,8 @@ def register():
             try:
                 with db.cursor() as cursor:
                     cursor.execute(
-                        "INSERT INTO users (username, password) VALUES (%s, %s)",
+                        "INSERT INTO users (username, password)"
+                        " VALUES (%s, %s)",
                         (username, generate_password_hash(password)),
                     )
                     db.commit()
@@ -56,7 +57,7 @@ def login():
 
         if db is None:
             error = DB_CONNECT_ERROR_STR
-        
+
         if error is None:
             with db.cursor() as cursor:
                 cursor.execute(

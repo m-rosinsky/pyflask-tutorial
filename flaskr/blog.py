@@ -14,14 +14,14 @@ def index():
     db = get_db()
     if db is None:
         return render_template('blog/index.html', posts='error')
-    
+
     with db.cursor() as cursor:
         cursor.execute(
             'SELECT p.id, title, body, created, author_id, username'
             ' FROM posts p JOIN users u ON p.author_id = u.id'
             ' ORDER BY created DESC'
         )
-    
+
         posts = cursor.fetchall()
     return render_template('blog/index.html', posts=posts)
 
@@ -61,7 +61,7 @@ def get_post(id, check_author=True):
     db = get_db()
     if db is None:
         return None
-    
+
     with db.cursor() as cursor:
         cursor.execute(
             'SELECT p.id, title, body, created, author_id, username'
@@ -93,10 +93,10 @@ def update(id):
         error = None
         title = request.form['title']
         body = request.form['body']
-        
+
         if not title:
             error = 'Title is required.'
-        
+
         db = get_db()
         if db is None:
             error = DB_CONNECT_ERROR_STR
